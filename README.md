@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MyWebChecker
 
-## Getting Started
+Analyze any website's **traffic** (daily, weekly, monthly, yearly) and **SEO** details with a single URL search.
 
-First, run the development server:
+**Live:** [mywebchecker.vercel.app](https://mywebchecker.vercel.app)
+
+## Features
+
+- Traffic period breakdowns (daily / weekly / monthly / yearly) and visit trend chart
+- Global rank from [Tranco](https://tranco-list.eu/) with 30-day history
+- Optional provider-verified traffic via Scrappa (`SCRAPPA_API_KEY`)
+- Full SEO audit from live page crawl: meta tags, headings, links, robots.txt, sitemap
+
+## How traffic works
+
+1. **Default (no API key):** Visit estimates are modeled from verified Tranco global rank using a published power-law formula. Rank history drives the visit trend chart.
+2. **With `SCRAPPA_API_KEY`:** SimilarWeb-style provider data (bounce rate, sources, etc.) from [Scrappa](https://scrappa.co) — 500 free credits/month.
+
+## Setup
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment variables (optional)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Variable | Description |
+|----------|-------------|
+| `SCRAPPA_API_KEY` | Scrappa SimilarWeb API for provider-verified traffic |
 
-## Learn More
+## Deploy
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npx vercel --prod
+```
