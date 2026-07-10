@@ -32,8 +32,13 @@ export interface TrafficData {
   sources: TrafficSources | null;
   visitHistory: TrafficPoint[];
   rankHistory: RankPoint[];
-  source: "scrappa" | "tranco-model" | null;
+  source: "scrappa" | "tranco-model" | "site-signals" | null;
   periodsDerived: boolean;
+  minorSignals: {
+    waybackSnapshots: number;
+    domainAgeDays: number | null;
+    inTrancoTopList: boolean;
+  } | null;
 }
 
 export interface SeoIssue {

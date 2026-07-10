@@ -1,5 +1,10 @@
 import { extractDomain, parseDuration, parsePercent, parseVisitCount } from "./domain";
-import type { RankPoint, TrafficData, TrafficPoint, TrafficSources } from "./types";
+import {
+  buildMinorVisitHistory,
+  collectMinorSiteSignals,
+  estimateMinorSiteVisits,
+} from "./minor-site";
+import type { RankPoint, SeoData, TrafficData, TrafficPoint, TrafficSources } from "./types";
 
 interface ScrappaResponse {
   success?: boolean;
@@ -125,6 +130,7 @@ async function fetchScrappaTraffic(domain: string, rankHistory: RankPoint[]): Pr
       rankHistory,
       source: "scrappa",
       periodsDerived: true,
+      minorSignals: null,
     };
   } catch {
     return null;
@@ -153,29 +159,43 @@ function buildTrancoModelTraffic(domain: string, rankHistory: RankPoint[]): Traf
     rankHistory,
     source: "tranco-model",
     periodsDerived: true,
+    minorSignals: null,
   };
 }
 
-function emptyTraffic(domain: string, rankHistory: RankPoint[], reason: string): TrafficData {
+async function buildMinorSiteTraffic(domain: string, seo: SeoData): Promise<TrafficData> {
+  const signals = await collectMinorSiteSignals(domain);
+  const monthlyVisits = estimateMinorSiteVisits(seo, signals);
+  const visitHistory = buildMinorVisitHistory(monthlyVisits, signals.waybackMonthly).map((p) => ({
+    label: p.label,
+    visits: p.visits,
+    period: "monthly" as const,
+  }));
+
   return {
     domain,
-    available: false,
-    unavailableReason: reason,
-    globalRank: rankHistory.at(-1)?.rank ?? null,
+    available: true,
+    unavailableReason: null,
+    globalRank: null,
     countryRank: null,
-    monthlyVisits: null,
+    monthlyVisits,
     bounceRate: null,
     avgVisitDurationSeconds: null,
     pagesPerVisit: null,
     sources: null,
-    visitHistory: [],
-    rankHistory,
-    source: null,
-    periodsDerived: false,
+    visitHistory,
+    rankHistory: [],
+    source: "site-signals",
+    periodsDerived: true,
+    minorSignals: {
+      waybackSnapshots: signals.waybackSnapshots,
+      domainAgeDays: signals.domainAgeDays,
+      inTrancoTopList: false,
+    },
   };
 }
 
-export async function analyzeTraffic(input: string): Promise<TrafficData> {
+export async function analyzeTraffic(input: string, seo: SeoData): Promise<TrafficData> {
   const domain = extractDomain(input);
   const rankHistory = await resolveRankHistory(domain);
 
@@ -185,11 +205,7 @@ export async function analyzeTraffic(input: string): Promise<TrafficData> {
   const modeled = buildTrancoModelTraffic(domain, rankHistory);
   if (modeled) return modeled;
 
-  return emptyTraffic(
-    domain,
-    rankHistory,
-    "This domain is not ranked in Tranco's top lists, so visit estimates cannot be calculated.",
-  );
+  return buildMinorSiteTraffic(domain, seo);
 }
 
 export function periodStats(monthlyVisits: number | null): Record<"daily" | "weekly" | "monthly" | "yearly", number | null> {

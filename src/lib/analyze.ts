@@ -6,10 +6,8 @@ import type { AnalysisResult } from "./types";
 export async function analyzeWebsite(input: string): Promise<AnalysisResult> {
   const domain = extractDomain(input);
 
-  const [traffic, seo] = await Promise.all([
-    analyzeTraffic(input),
-    analyzeSeo(input),
-  ]);
+  const seo = await analyzeSeo(input);
+  const traffic = await analyzeTraffic(input, seo);
 
   return {
     domain,

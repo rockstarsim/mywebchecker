@@ -33,6 +33,7 @@ const PERIOD_LABELS: Record<TrafficPeriod, string> = {
 const SOURCE_LABELS: Record<string, string> = {
   scrappa: "Provider-verified traffic data (Scrappa / SimilarWeb estimates)",
   "tranco-model": "Visit estimates modeled from verified Tranco global rank",
+  "site-signals": "Visit estimates for smaller sites — based on Wayback history, domain age, and page signals",
 };
 
 export function ResultsDashboard({ result }: ResultsDashboardProps) {
@@ -62,7 +63,7 @@ export function ResultsDashboard({ result }: ResultsDashboardProps) {
           <p className="mb-4 text-sm text-slate-400">{SOURCE_LABELS[traffic.source]}</p>
         )}
 
-        {!hasVisits && (
+        {!hasVisits && traffic.unavailableReason && (
           <div className="mb-6 rounded-xl border border-slate-700 bg-slate-800/50 px-4 py-3 text-sm text-slate-300">
             {traffic.unavailableReason}
           </div>
@@ -93,7 +94,9 @@ export function ResultsDashboard({ result }: ResultsDashboardProps) {
                 ? `#${rankStats.current.toLocaleString()}`
                 : traffic.globalRank
                   ? `#${traffic.globalRank.toLocaleString()}`
-                  : "—"
+                  : traffic.minorSignals
+                    ? "Outside top 1M"
+                    : "—"
             }
           />
           <Stat
@@ -109,6 +112,22 @@ export function ResultsDashboard({ result }: ResultsDashboardProps) {
           <Stat label="Pages / Visit" value={traffic.pagesPerVisit?.toFixed(1) ?? "—"} />
           {traffic.countryRank != null && (
             <Stat label="Country Rank" value={`#${traffic.countryRank.toLocaleString()}`} />
+          )}
+          {traffic.minorSignals && (
+            <>
+              <Stat
+                label="Wayback Snapshots"
+                value={traffic.minorSignals.waybackSnapshots.toLocaleString()}
+              />
+              <Stat
+                label="Domain Age"
+                value={
+                  traffic.minorSignals.domainAgeDays != null
+                    ? `${Math.floor(traffic.minorSignals.domainAgeDays / 365)}y ${Math.floor((traffic.minorSignals.domainAgeDays % 365) / 30)}m`
+                    : "—"
+                }
+              />
+            </>
           )}
         </div>
 
